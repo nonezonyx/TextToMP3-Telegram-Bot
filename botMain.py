@@ -70,6 +70,11 @@ async def process_message(message):
 
 #boot
 def main():
+    if not os.path.exists(f'{os.getcwd()}/tmp'):
+        try:
+            os.mkdir(f'{os.getcwd()}/tmp')
+        except Exception as e:
+            print(e)
     bot.add_custom_filter(asyncio_filters.StateFilter(bot))
     bot.add_custom_filter(asyncio_filters.IsDigitFilter())
     while True:
