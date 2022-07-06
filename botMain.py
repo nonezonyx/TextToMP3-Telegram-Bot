@@ -3,7 +3,7 @@ import asyncio #for async computing
 from telebot.async_telebot import AsyncTeleBot #telegram bot api
 from gtts import gTTS #spech syntesis
 import time
-from langdetect import detect #detectin language
+import langid #detectin language
 import os #files manipulating
 from telebot.asyncio_handler_backends import State, StatesGroup
 from telebot.asyncio_storage import StateMemoryStorage
@@ -59,12 +59,18 @@ async def process_fixed(message):
 
 @bot.message_handler()
 async def process_message(message):
-    lang =  message.text.split('@∆=')[-1] if '@∆=' in message.text else detect(message.text)
+    lang =  message.text.split('@∆=')[-1] if '@∆=' in message.text else langid.classify(message.text)[0]
+    if lang=='mk': lang='ru'
+    if lang=='cy': lang='en'
+    if lang=='kk': lang='ru'
     result_message = await bot.send_message(message.chat.id, f'<i>Processing...</i> {lang}', parse_mode='HTML', disable_web_page_preview=True,reply_to_message_id=message.id)
     text = message.text.split('@∆=')[0]
-    gTTS(text=text.replace('/n',''), lang=lang).save(f'tmp/{message.chat.id}-{message.id}.mp3')
+    try:
+        gTTS(text=text.replace('/n',''), lang=lang).save(f'tmp/{message.chat.id}-{message.id}.mp3')
+    except Exception as e:
+        await bot.edit_message_text(chat_id=message.chat.id, message_id=result_message.id, text=f"<b>Something went wrong!</b>\n<i>Error: </i>{e}\n<i>Detected language:</i> <b>{lang}</b>\nIf it is not a correct one try to set language manualy using '/setfixedlanguage'", parse_mode='HTML')
     with open(f'tmp/{message.chat.id}-{message.id}.mp3', 'rb') as doc:
-        await bot.send_voice(message.chat.id, doc, reply_to_message_id=message.id, caption=f"<b>{lang}</b>", parse_mode='HTML')
+        await bot.send_document(message.chat.id, doc, reply_to_message_id=message.id, caption=f"<b>{lang}</b>", parse_mode='HTML')
     await bot.delete_message(chat_id=message.chat.id, message_id=result_message.id, timeout=180)
     os.remove(f'tmp/{message.chat.id}-{message.id}.mp3')
 
@@ -87,3 +93,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
