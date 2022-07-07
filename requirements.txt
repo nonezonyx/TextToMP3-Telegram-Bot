@@ -6,3 +6,4 @@ pdfplumber
 requests
 music_tag
 langid
+aiohttp
