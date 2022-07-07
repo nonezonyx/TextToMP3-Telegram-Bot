@@ -1,0 +1,8 @@
+ConfigParser
+asyncio
+pyTelegramBotAPI
+gtts
+pdfplumber
+requests
+music_tag
+langid
