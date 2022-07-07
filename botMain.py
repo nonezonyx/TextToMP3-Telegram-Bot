@@ -15,7 +15,8 @@ import pdfplumber #pdf support
 
 #read config data
 config = configparser.ConfigParser()
-config.read("config.ini")
+cwd = os.getcwd()
+config.read(f"{cwd}/config.ini")
 
 #variables
 adds=False
@@ -35,7 +36,7 @@ class lang(StatesGroup):
 #functions
 async def text_to_mp3(text, lang, message):
     result_message = await bot.send_message(message.chat.id, f'<i>Processing...</i> {lang = }', parse_mode='HTML', disable_web_page_preview=True,reply_to_message_id=message.id)
-    path=f'tmp/{message.chat.id}-{message.id}.mp3'
+    path=f'{cwd}/tmp/{message.chat.id}-{message.id}.mp3'
     if len(text)>max_letters:
         e=f'Too many letters in text! Limit is {max_letters}'
         send_error(e, result_message)
@@ -119,7 +120,7 @@ async def process_document(message):
     file_id = message.document.file_id
     file_path = await bot.get_file(file_id)
     extension = file_path.file_path.split('.')[-1].lower()
-    name=f'tmp/{file_id}.{extension}'
+    name=f'{cwd}/tmp/{file_id}.{extension}'
     download_file(f'https://api.telegram.org/file/bot{token}/{file_path.file_path}',name)
     if extension == 'txt':
         with open(name, 'rb') as file:
@@ -148,5 +149,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-
 
