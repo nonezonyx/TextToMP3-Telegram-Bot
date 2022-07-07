@@ -18,9 +18,14 @@ config = configparser.ConfigParser()
 config.read("config.ini")
 
 #variables
+adds=False
 token=str(config["bot"]["token"])
 bot=AsyncTeleBot(token)
 headers={'User-Agent':str(config["bot"]["header"])}
+max_letters=int(config["bot"]["max_letters"])
+thumb_path=str(config["bot"]["thumb_path"])
+botName=str(config["bot"]["botName"])
+inlineAd=f'Ad: {adds}' if adds else ''
 
 #states
 class lang(StatesGroup):
@@ -29,25 +34,27 @@ class lang(StatesGroup):
 
 #functions
 async def text_to_mp3(text, lang, message):
-    result_message = await bot.send_message(message.chat.id, f'<i>Processing...</i> Language = <b>{lang}</b>', parse_mode='HTML', disable_web_page_preview=True,reply_to_message_id=message.id)
+    result_message = await bot.send_message(message.chat.id, f'<i>Processing...</i> {lang = }', parse_mode='HTML', disable_web_page_preview=True,reply_to_message_id=message.id)
     path=f'tmp/{message.chat.id}-{message.id}.mp3'
+    if len(text)>max_letters:
+        e=f'Too many letters in text! Limit is {max_letters}'
+        send_error(e, result_message)
+        return(e)
     try:
         start_time = time.time()
         gTTS(text=text.replace('/n',''), lang=lang).save(path)
         logging.info(f"Processing time = {time.time()-start_time}")
     except Exception as e:
-        await bot.edit_message_text(chat_id=message.chat.id, message_id=result_message.id, text=f"<b>Something went wrong!</b>\n<i>Error: </i>{e}\n<i>Detected language:</i> <b>{lang}</b>\nIf it is not a correct one try to set language manualy using '/setfixedlanguage'", parse_mode='HTML')
-        logging.error(e)
-        return('ERROR')
+        send_error(e, result_message)
+        os.remove(path)
+        return(e)
     f = music_tag.load_file(path)
-    f['artist'] = u'NONEZONYX'
-    f['title'] = u'AudioFromText'
-    f['album'] = u'@TextIntoAudio_Bot'
+    f['artist'] = botName
+    f['title'] = f'{lang}TextToMP3'
     f['lyrics'] = text
     f.save()
-    with open(path, 'rb') as doc:
-        with open('resources/thumb2.jpg', 'rb') as thumb:
-            await bot.send_document(message.chat.id, doc, reply_to_message_id=message.id, caption=f"Language = <b>{lang}</b>.\nMade with @TextIntoAudio_Bot", parse_mode='HTML', thumb=thumb)
+    with open(path, 'rb') as doc, open(thumb_path, 'rb') as thumb:
+        await bot.send_document(message.chat.id, doc,thumb=thumb, caption=f"Made by {botName}\n{inlineAd}",parse_mode='HTML',reply_to_message_id=message.id)
     await bot.delete_message(chat_id=message.chat.id, message_id=result_message.id, timeout=180)
     os.remove(path)
 
@@ -59,10 +66,14 @@ def download_file(url,name): #file download from url
                 f.write(chunk)
     return name
 
+async def send_error(e, result_message):
+    logging.error(e)
+    await bot.edit_message_text(chat_id=message.chat.id, message_id=result_message.id, text=f"<b>Something went wrong!</b>\n<i>Error: </i>Too many letters in text! Limit is <u>{max_letters}</u>", parse_mode='HTML')
+
 # message handlers
 @bot.message_handler(commands=['start'])
 async def start_message(message):
-    await bot.send_message(message.chat.id, "Hi! Send me text and i'll convert it to audio")
+    await bot.send_message(message.chat.id, "Hi! Send me text/.txt/.pdf and i'll convert it to audio")
 
 @bot.message_handler(commands='setfixedlanguage')
 async def setlang_command(message):
@@ -100,9 +111,6 @@ async def process_fixed(message):
 @bot.message_handler()
 async def process_message(message):
     lang =  message.text.split('@∆=')[-1] if '@∆=' in message.text else langid.classify(message.text)[0]
-    if lang=='mk': lang='ru'
-    if lang=='cy': lang='en'
-    if lang=='kk': lang='ru'
     text = message.text.split('@∆=')[0]
     await text_to_mp3(text, lang, message)
 
@@ -140,4 +148,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
