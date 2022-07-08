@@ -1,4 +1,3 @@
-import configparser #for config file
 import asyncio #for async computing
 from telebot.async_telebot import AsyncTeleBot #telegram bot api
 from gtts import gTTS #spech syntesis
@@ -13,19 +12,15 @@ import logging
 import requests as rq
 import pdfplumber #pdf support
 
-#read config data
-config = configparser.ConfigParser()
-cwd = os.getcwd()
-config.read(f"{cwd}/config.ini")
-
 #variables
+cwd = os.getcwd()
 adds=False
-token=str(config["bot"]["token"])
+token=str(os.environ.get("token"))
 bot=AsyncTeleBot(token)
-headers={'User-Agent':str(config["bot"]["header"])}
-max_letters=int(config["bot"]["max_letters"])
-thumb_path=str(config["bot"]["thumb_path"])
-botName=str(config["bot"]["botName"])
+headers={'User-Agent':str(os.environ.get("headers"))}
+max_letters=int(os.environ.get("max_letters", 7500))
+thumb_path=str(os.environ.get("thumb_path", 'resources/thumb.jpg'))
+botName=str(os.environ.get("botName", '@TextIntoAudio_Bot'))
 inlineAd=f'Ad: {adds}' if adds else ''
 
 #states
@@ -149,4 +144,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
