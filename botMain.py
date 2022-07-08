@@ -19,7 +19,7 @@ token=str(os.environ.get("token"))
 bot=AsyncTeleBot(token)
 headers={'User-Agent':str(os.environ.get("headers"))}
 max_letters=int(os.environ.get("max_letters", 7500))
-thumb_path=str(os.environ.get("thumb_path", 'resources/thumb.jpg'))
+thumb_path=str(os.environ.get("thumb_path", f'{cwd}/resources/thumb2.jpg'))
 botName=str(os.environ.get("botName", '@TextIntoAudio_Bot'))
 inlineAd=f'Ad: {adds}' if adds else ''
 
