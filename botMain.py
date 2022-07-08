@@ -129,6 +129,9 @@ async def process_document(message):
 
 #boot
 def main():
+    if token == 'None':
+        logging.critical('token is None')
+        exit('Token is not selected')
     if not os.path.exists(f'{os.getcwd()}/tmp'):
         try:
             os.mkdir(f'{os.getcwd()}/tmp')
