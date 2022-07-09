@@ -146,7 +146,7 @@ async def process_document(message):
 
 #boot
 def main():
-    logging.basicConfig(filename='bot.log', encoding='utf-8', level=logging.INFO)
+    logging.basicConfig(filename='bot.log', encoding='utf-8', level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
     logging.info(f'file path = {cwd}')
     if token == 'None':
         logging.critical('token is None')
