@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import asyncio #for async computing
 from telebot.async_telebot import AsyncTeleBot #telegram bot api
 from gtts import gTTS #spech syntesis
@@ -11,9 +12,12 @@ import music_tag
 import logging
 import requests as rq
 import pdfplumber #pdf support
+import pathlib #files manipulating
+import ssl
+from aiohttp import web
 
 #variables
-cwd = os.getcwd()
+cwd = pathlib.Path(__file__).parent.resolve()
 adds=False
 token=str(os.environ.get("token"))
 bot=AsyncTeleBot(token)
@@ -22,6 +26,19 @@ max_letters=int(os.environ.get("max_letters", 7500))
 thumb_path=str(os.environ.get("thumb_path", f'{cwd}/resources/thumb2.jpg'))
 botName=str(os.environ.get("botName", '@TextIntoAudio_Bot'))
 inlineAd=f'Ad: {adds}' if adds else ''
+
+#webhook
+#WEBHOOK_HOST = '<ip/host where the bot is running>'
+#WEBHOOK_PORT = 8443  # 443, 80, 88 or 8443 (port need to be 'open')
+#WEBHOOK_LISTEN = '0.0.0.0'  # In some VPS you may need to put here the IP addr
+
+#WEBHOOK_SSL_CERT = f'{cwd}/webhook_cert.pem'  # Path to the ssl certificate
+#WEBHOOK_SSL_PRIV = f'{cwd}/webhook_pkey.pem'  # Path to the ssl private key
+
+#WEBHOOK_URL_BASE = f"https://{WEBHOOK_HOST}:{WEBHOOK_PORT}"
+#WEBHOOK_URL_PATH = f"/{token}/"
+
+#app = web.Application()
 
 #states
 class lang(StatesGroup):
@@ -129,14 +146,12 @@ async def process_document(message):
 
 #boot
 def main():
+    logging.basicConfig(filename='bot.log', encoding='utf-8', level=logging.INFO)
+    logging.info(f'file path = {cwd}')
     if token == 'None':
         logging.critical('token is None')
         exit('Token is not selected')
-    if not os.path.exists(f'{os.getcwd()}/tmp'):
-        try:
-            os.mkdir(f'{os.getcwd()}/tmp')
-        except Exception as e:
-            logging.error(e)
+    tmpPath = pathlib.Path("./tmp").mkdir(parents=True, exist_ok=True)
     bot.add_custom_filter(asyncio_filters.StateFilter(bot))
     while True:
         try:
