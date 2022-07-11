@@ -13,8 +13,7 @@ import logging
 import requests as rq
 import pdfplumber #pdf support
 import pathlib #files manipulating
-import ssl
-from aiohttp import web
+from flask import Flask, request, jsonify
 
 #variables
 cwd = pathlib.Path(__file__).parent.resolve()
@@ -27,18 +26,7 @@ thumb_path=str(os.environ.get("thumb_path", f'{cwd}/resources/thumb2.jpg'))
 botName=str(os.environ.get("botName", '@TextIntoAudio_Bot'))
 inlineAd=f'Ad: {adds}' if adds else ''
 
-#webhook
-#WEBHOOK_HOST = '<ip/host where the bot is running>'
-#WEBHOOK_PORT = 8443  # 443, 80, 88 or 8443 (port need to be 'open')
-#WEBHOOK_LISTEN = '0.0.0.0'  # In some VPS you may need to put here the IP addr
-
-#WEBHOOK_SSL_CERT = f'{cwd}/webhook_cert.pem'  # Path to the ssl certificate
-#WEBHOOK_SSL_PRIV = f'{cwd}/webhook_pkey.pem'  # Path to the ssl private key
-
-#WEBHOOK_URL_BASE = f"https://{WEBHOOK_HOST}:{WEBHOOK_PORT}"
-#WEBHOOK_URL_PATH = f"/{token}/"
-
-#app = web.Application()
+app = Flask(__name__)
 
 #states
 class lang(StatesGroup):
